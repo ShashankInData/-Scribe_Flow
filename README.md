@@ -34,10 +34,6 @@ Scribe_Flow/
 ├─ requirements.txt
 └─ README.md
 
-yaml
-Copy
-Edit
-
 ---
 
 ## 📋 Requirements
@@ -67,38 +63,32 @@ source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-⚙️ Configuration
-Create your .env file from the example:
 
-bash
-Copy
-Edit
+⚙️ Configuration
+Create your .env file
 # Windows (PowerShell)
 copy .env.example .env
 
 # macOS/Linux
 cp .env.example .env
-Edit .env and set your API keys:
 
-ini
-Copy
-Edit
+Edit .env and set your API keys:
 OPENAI_API_KEY=your_openai_key_here
 # Optional for diarization:
 HUGGINGFACE_TOKEN=your_hf_token_here
 # Optional tuning:
 ASR_CONCURRENCY=3
+
 ▶️ Run the App
-bash
-Copy
-Edit
 streamlit run app.py
+
 In the sidebar:
 
 Paste your OpenAI API key
 
 Toggle "Enable speaker diarization" if your audio has multiple speakers
 (A rename UI will appear if ≥2 speakers are detected)
+
 
 📖 Usage
 Upload a local media file or paste a YouTube URL
