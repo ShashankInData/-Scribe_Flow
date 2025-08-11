@@ -1,0 +1,80 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+*.env
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.buildozer/
+.python-version
+.ipynb_checkpoints/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# Packaging / build
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv*/
+.venv/
+venv/
+ENV/
+mvp/
+
+# Data files
+data/uploads/*
+data/outputs/*
+data/temp/*
+data/*.db
+*.rttm
+
+# Media (optional — keep if you don’t want to commit large samples)
+*.wav
+*.mp3
+*.mp4
+*.m4a
+*.flac
+*.ogg
+*.mov
+*.avi
+*.mkv
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs / temp
+*.log
+*.tmp
+*.temp
+*.bak
