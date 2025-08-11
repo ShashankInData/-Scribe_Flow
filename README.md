@@ -1,6 +1,6 @@
-# ScribeFlow — Speech to Structured Text
+# 🎙 ScribeFlow — Speech to Structured Text
 
-ScribeFlow is a **Streamlit** app that transcribes audio/video, can optionally separate speakers (diarization), and exports results to **SRT**, **VTT**, **DOCX**, and **PDF**.  
+ScribeFlow is a **Streamlit** app that transcribes audio/video, can optionally separate speakers (diarization), and exports results to **SRT, VTT, DOCX, and PDF**.  
 It also offers an **AI-generated summary** of the transcript.
 
 ---
@@ -8,9 +8,9 @@ It also offers an **AI-generated summary** of the transcript.
 ## ✨ Features
 
 - 🎵 **Multi-format upload**: MP3, WAV, M4A, MP4, MOV, AVI, FLAC, OGG
-- 📺 **YouTube URL support** (via yt-dlp)
+- 📺 **YouTube URL support** (via `yt-dlp`)
 - 🤖 **OpenAI Whisper transcription** (`gpt-4o-mini-transcribe`)
-- 🗣️ **Optional speaker diarization** (pyannote.audio 3.1+)
+- 🗣️ **Optional speaker diarization** (`pyannote.audio 3.1+`)
 - 🏷️ **Speaker rename UI** when multiple speakers are detected
 - 📂 **Exports**: SRT, WebVTT, DOCX, PDF
 - 📜 **AI summary** (OpenAI GPT)
@@ -34,14 +34,18 @@ Scribe_Flow/
 ├─ requirements.txt
 └─ README.md
 
+yaml
+Copy
+Edit
+
 ---
 
 ## 📋 Requirements
 
-- **Python** 3.11+
+- Python **3.11+**
 - **FFmpeg** installed and on PATH
 - **OpenAI API key**
-- *(Optional)* Hugging Face access token for diarization
+- (Optional) Hugging Face access token for diarization
 
 ---
 
@@ -91,48 +95,48 @@ Edit
 streamlit run app.py
 In the sidebar:
 
-Paste your OpenAI API key.
+Paste your OpenAI API key
 
-Toggle "Enable speaker diarization" if your audio has multiple speakers.
-You’ll see a rename UI (Speaker 1, Speaker 2, …) if ≥2 speakers are detected.
+Toggle "Enable speaker diarization" if your audio has multiple speakers
+(A rename UI will appear if ≥2 speakers are detected)
 
 📖 Usage
-Upload a local media file or paste a YouTube URL.
+Upload a local media file or paste a YouTube URL
 
-Click Transcribe.
+Click Transcribe
 
-View:
+View results:
 
 Transcript (full text)
 
 Timed Segments (with optional speaker rename)
 
-Export in SRT, VTT, DOCX, or PDF.
+Export in SRT, VTT, DOCX, or PDF
 
-Go to AI — Summary and click Generate Summary for a concise recap.
+Use the AI Summary feature for a concise recap
 
 📌 Notes on Large Files
-Very large uploads are memory-heavy in Streamlit.
+Very large uploads are memory-heavy in Streamlit
 
-Prefer YouTube URL for long content.
+Prefer YouTube URL for long content
 
-For local large files, consider pre-downloading with yt-dlp into data/uploads/.
+For local large files, consider pre-downloading with yt-dlp into data/uploads/
 
 ⚡ GPU & Diarization
-Diarization (pyannote.audio 3.1) runs on CPU by default.
+Diarization (pyannote.audio 3.1) runs on CPU by default
 
-Switches to GPU if CUDA is available.
+Switches to GPU if CUDA is available
 
-Install PyTorch with CUDA support for acceleration.
+Install PyTorch with CUDA for acceleration
 
 🛠 Troubleshooting
-DOCX/PDF unreadable → ensure backend/exports.py returns bytes (fixed in this version).
+DOCX/PDF unreadable → Ensure backend/exports.py returns bytes (✅ fixed in this version)
 
-FFmpeg not found → install FFmpeg and ensure it’s on PATH (ffmpeg -version should work).
+FFmpeg not found → Install FFmpeg and ensure it’s on PATH (ffmpeg -version should work)
 
-OpenAI 404/model errors → verify model gpt-4o-mini-transcribe and API key.
+OpenAI 404/model errors → Verify model gpt-4o-mini-transcribe and API key
 
-Diarization not working → check HUGGINGFACE_TOKEN and model terms acceptance on Hugging Face.
+Diarization not working → Check HUGGINGFACE_TOKEN and model terms acceptance on Hugging Face
 
 🗺 Roadmap
 AI: Action items & highlights
@@ -144,4 +148,4 @@ Quotes extraction / post writer / quiz generator
 Resumable uploads for very large files
 
 📜 License
-MIT License 
+MIT License
