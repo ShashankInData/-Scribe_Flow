@@ -1,14 +1,25 @@
 from dotenv import load_dotenv
-load_dotenv()
-
 import os
 from pathlib import Path
+
+# Load .env from project root (robust on Windows/OneDrive/CWD changes)
+ROOT = Path(__file__).resolve().parent
+load_dotenv(dotenv_path=ROOT / ".env")
+
 import streamlit as st
+import torch
 
 from backend.asr import ASRProcessor
 from backend.exports import ExportManager
 from backend.ai_tools import AITools
-from backend.utils import setup_directories
+from backend.utils import setup_directories, get_audio_duration
+
+# Try to import diarization availability for better UX messages
+try:
+    from backend.diarization import is_available as diarization_available
+except Exception:
+    def diarization_available() -> bool:
+        return False
 
 
 # ------------------------------
@@ -27,6 +38,20 @@ def _ensure_state():
         st.session_state.show_results = False
     if "speaker_map" not in st.session_state:
         st.session_state.speaker_map = {}
+    if "duration_sec" not in st.session_state:
+        st.session_state.duration_sec = 0.0
+
+
+def _fmt_secs(s: float) -> str:
+    """Format seconds as mm:ss or hh:mm:ss."""
+    try:
+        s = int(max(0, float(s)))
+    except Exception:
+        s = 0
+    h = s // 3600
+    m = (s % 3600) // 60
+    sec = s % 60
+    return f"{h:d}:{m:02d}:{sec:02d}" if h else f"{m:d}:{sec:02d}"
 
 
 def main():
@@ -55,8 +80,17 @@ def main():
         enable_diar = st.checkbox(
             "Enable speaker diarization",
             value=False,
-            help="Identifies who spoke when. Enable for meetings, interviews, or multi-speaker audio."
+            help="Identifies who spoke when (Speaker 1, Speaker 2, …). Enable for meetings, interviews, or multi-speaker audio."
         )
+
+        # Small debug hint for HF token presence (remove later if you want)
+        hf_token = os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HF_TOKEN") or os.getenv("HF_ACCESS_TOKEN")
+        if enable_diar:
+            st.caption("Diarization groups audio by speaker so your transcript shows who said what.")
+            if hf_token:
+                st.caption(f"Hugging Face token detected: …{hf_token[-6:]}")
+            else:
+                st.warning("Hugging Face token not detected (.env). Set HUGGINGFACE_TOKEN to enable diarization.")
 
         if api_key:
             os.environ["OPENAI_API_KEY"] = api_key
@@ -89,12 +123,35 @@ def main():
                 st.error(f"YouTube download failed: {e}")
                 st.stop()
         else:
-            upload_dir = Path("data/uploads")
+            upload_dir = ROOT / "data" / "uploads"
             upload_dir.mkdir(parents=True, exist_ok=True)
             file_path = str(upload_dir / uploaded_file.name)
             with open(file_path, "wb") as f:
                 f.write(uploaded_file.getbuffer())
             st.success(f"Uploaded: {uploaded_file.name}")
+
+        # Pre-compute duration for status strip
+        try:
+            st.session_state.duration_sec = float(get_audio_duration(file_path))
+        except Exception:
+            st.session_state.duration_sec = 0.0
+
+        # ------------------------------
+        # Status strip (Model • Diarization • Device • Duration)
+        # ------------------------------
+        model_short = "4o-mini-tx"  # short for gpt-4o-mini-transcribe
+        device_label = "cuda" if torch.cuda.is_available() else "cpu"
+        dur_str = _fmt_secs(st.session_state.duration_sec)
+        st.markdown(
+            f"**Model:** {model_short} | "
+            f"**Diarization:** {'On' if enable_diar else 'Off'} | "
+            f"**Device:** {device_label} | "
+            f"**Duration:** {dur_str}"
+        )
+
+        # If diarization was requested but the pipeline can't load, warn early
+        if enable_diar and not diarization_available():
+            st.warning("Diarization requested, but the pipeline is unavailable (missing token, package, or model terms).")
 
         # ------------------------------
         # Transcribe
@@ -136,10 +193,12 @@ def main():
             st.subheader("Timed Segments")
 
             speakers = sorted({seg.get("speaker") for seg in segments if seg.get("speaker")})
+            # Rename UI only if diarization enabled AND multiple speakers
             if enable_diar and len(speakers) > 1:
                 st.markdown("Rename speakers:")
                 if not st.session_state.speaker_map:
-                    st.session_state.speaker_map = {s: s for s in speakers}
+                    # Initialize with readable names (SPEAKER_00 -> Speaker 0)
+                    st.session_state.speaker_map = {s: s.replace("SPEAKER_", "Speaker ") for s in speakers}
                 cols = st.columns(min(4, len(speakers)))
                 for idx, spk in enumerate(speakers):
                     with cols[idx % len(cols)]:
@@ -174,7 +233,7 @@ def main():
         with col2:
             try:
                 vtt_content = export_manager.to_vtt(result)
-                st.download_button("Download VTT", vtt_content, file_name="transcript.vtt", mime="text/plain")
+                st.download_button("Download VTT", vtt_content, file_name="transcript.vtt", mime="text/vtt")
             except Exception as e:
                 st.error(f"VTT export failed: {e}")
 
@@ -182,7 +241,9 @@ def main():
             try:
                 docx_bytes = export_manager.to_docx(result)
                 st.download_button(
-                    "Download DOCX", docx_bytes, file_name="transcript.docx",
+                    "Download DOCX",
+                    docx_bytes,
+                    file_name="transcript.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 )
             except Exception as e:
@@ -204,6 +265,11 @@ def main():
                 st.text_area("Summary", summary, height=150)
             except Exception as e:
                 st.error(f"Summary generation failed: {e}")
+
+        # Optional: quick reset to clear session and start fresh
+        if st.button("Reset session"):
+            st.session_state.clear()
+            st.experimental_rerun()
 
 
 if __name__ == "__main__":
